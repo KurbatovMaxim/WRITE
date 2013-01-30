@@ -1,32 +1,10 @@
-// WRITE_client.cpp: определяет точку входа для приложения.
+// WRITE_client.cpp: _tWinMain entry point
 //
 
-
-#include "stdafx.h"
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <iostream>
-#include <fstream>
-#include <ctime>
-
-
-#include <windows.h>
-#include <WtsApi32.h>
-#include <winsock2.h> // Включаем использование сокетов
-#include <Shellapi.h>
-#include <strsafe.h>
-
 #include "WRITE_client.h"
+#pragma warning
+using namespace std;
 
-#define MAX_LOADSTRING 100
-
-
-// Отправить объявления функций, включенных в этот модуль кода:
-ATOM				MyRegisterClass(HINSTANCE hInstance);
-BOOL				InitInstance(HINSTANCE, int);
-LRESULT CALLBACK	WndProc(HWND, UINT, WPARAM, LPARAM);
-INT_PTR CALLBACK	About(HWND, UINT, WPARAM, LPARAM);
 
 int APIENTRY _tWinMain(HINSTANCE hInstance,
                      HINSTANCE hPrevInstance,
@@ -52,7 +30,7 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 		return FALSE;
 	}
 
-	hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDI_WORKSTATISTIC));
+	hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDI_ICON1));
 
 	// Main message loop:
 	while (GetMessage(&msg, NULL, 0, 0))
@@ -71,9 +49,9 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 
 
 //
-//  ФУНКЦИЯ: MyRegisterClass()
+//  FUNCTION: MyRegisterClass()
 //
-//  НАЗНАЧЕНИЕ: регистрирует класс окна.
+//  PURPOSE: Register Window class
 //
 ATOM MyRegisterClass(HINSTANCE hInstance)
 {
@@ -86,59 +64,61 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
 	wcex.cbClsExtra		= 0;
 	wcex.cbWndExtra		= 0;
 	wcex.hInstance		= hInstance;
-	wcex.hIcon			= LoadIcon(hInstance, MAKEINTRESOURCE(IDI_WRITE_CLIENT));
+	wcex.hIcon			= LoadIcon(hInstance, MAKEINTRESOURCE(IDI_ICON1));
 	wcex.hCursor		= LoadCursor(NULL, IDC_ARROW);
 	wcex.hbrBackground	= (HBRUSH)(COLOR_WINDOW+1);
 	wcex.lpszMenuName	= MAKEINTRESOURCE(IDC_WRITE_CLIENT);
 	wcex.lpszClassName	= szWindowClass;
-	wcex.hIconSm		= LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
+	wcex.hIconSm		= LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_ICON1));
 
 	return RegisterClassEx(&wcex);
 }
 
 //
-//   ФУНКЦИЯ: InitInstance(HINSTANCE, int)
+//   FUNCTION: InitInstance(HINSTANCE, int)
 //
-//   НАЗНАЧЕНИЕ: сохраняет обработку экземпляра и создает главное окно.
-//
-//   КОММЕНТАРИИ:
-//
-//        В данной функции дескриптор экземпляра сохраняется в глобальной переменной, а также
-//        создается и выводится на экран главное окно программы.
-//
+//   PURPOSE: Saves descriptor and creates a Window
+
 BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 {
    HWND hWnd;
 
-   hInst = hInstance; // Сохранить дескриптор экземпляра в глобальной переменной
+   //InitCommonControls();
+   hInst = hInstance; // Save descriptor of the instance in global var
 
    hWnd = CreateWindow(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
       CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, NULL, NULL, hInstance, NULL);
-
+   //UpdateHostFile();
    if (!hWnd)
    {
       return FALSE;
    }
-     setlocale(LC_ALL, ".1251");
+
+   setlocale(LC_ALL, ".1251");
    ShowWindow(hWnd, SW_HIDE);
    Shell_CreateIcon(hInst, hWnd);
-   //UpdateWindow(hWnd);
    startTimer(hWnd);
 
    OpenProgram_handler(hWnd);
    return TRUE;
 }
 
+
+BOOL OnInitDialog(HWND hwnd)
+{
+	HMENU hmenu = GetSystemMenu(hwnd,FALSE);
+	if(hmenu)
+	{
+
+	}
+	return FALSE;
+}
+
 //
-//  ФУНКЦИЯ: WndProc(HWND, UINT, WPARAM, LPARAM)
+//  FUNCTION: WndProc(HWND, UINT, WPARAM, LPARAM)
 //
-//  НАЗНАЧЕНИЕ:  обрабатывает сообщения в главном окне.
-//
-//  WM_COMMAND	- обработка меню приложения
-//  WM_PAINT	-Закрасить главное окно
-//  WM_DESTROY	 - ввести сообщение о выходе и вернуться.
-//
-//
+//  PURPOSE:  Process messages
+
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	int wmId, wmEvent;
@@ -153,9 +133,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		// Parse the menu selections:
 		switch (wmId)
 		{
+		case WM_GOTO_WEB:
+			GoToSite();
+			break;
 		case IDM_ABOUT:
 			DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
 			break;
+		case WM_EXIT:
 		case IDM_EXIT:
 			DestroyWindow(hWnd);
 			break;
@@ -165,39 +149,55 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		break;
 	case WM_PAINT:
 		hdc = BeginPaint(hWnd, &ps);
-		// TODO: Add any drawing code here...
+		//***
+		//  No need to add anything here at this point
+		//***
 		EndPaint(hWnd, &ps);
 		break;
+	case WM_TRAY_ICON_MSG:
+		{
+			switch(lParam)
+			{
+		case WM_RBUTTONDOWN:
+		case WM_CONTEXTMENU:
+				ShowContextMenu(hWnd);
+				break;
+			default:
+				return DefWindowProc(hWnd, message, wParam, lParam);
+			}
+			break;
+		}
 	case WM_DESTROY:
 		CloseProgram_handler(hWnd);
 		PostQuitMessage(0);
 		break;
-	case WM_TIMER:     // обработка сообщения WM_TIMER
+	case WM_TIMER:     // TIMER Message
 		if( wParam == TIMER_SEC_ID ) {
 			SessChange_Handler(hWnd, EVT_TIMER);
 		}	
 		break;
+		
 
 	case WM_WTSSESSION_CHANGE:
 		switch( wParam )
 		{
 			case WTS_CONSOLE_CONNECT:
-				MessageBox(hWnd, TEXT("WTS_CONSOLE_CONNECT"), 
-						TEXT("WM_WTSSESSION_CHANGE"), MB_OK );
+				//MessageBox(hWnd, TEXT("WTS_CONSOLE_CONNECT"), 
+					//	TEXT("WM_WTSSESSION_CHANGE"), MB_OK );
 				break;
 			case WTS_CONSOLE_DISCONNECT:
-				MessageBox(hWnd, TEXT("WTS_CONSOLE_DISCONNECT"), 
-						TEXT("WM_WTSSESSION_CHANGE"), MB_OK );
+				//MessageBox(hWnd, TEXT("WTS_CONSOLE_DISCONNECT"), 
+					//	TEXT("WM_WTSSESSION_CHANGE"), MB_OK );
 				break;
 			case WTS_SESSION_LOCK:
-				SessChange_Handler(hWnd,EVT_LOGOFF); //sess lock
+				SessChange_Handler(hWnd,EVT_LOGOFF); //session lock
 				break;
 			case WTS_SESSION_UNLOCK:
-				SessChange_Handler(hWnd,EVT_LOGIN); //sess unlock
+				SessChange_Handler(hWnd,EVT_LOGIN); //session unlock
 				break;
 			default:
-				MessageBox(hWnd, TEXT("WTS_SESSION_UNLOCK"), 
-						TEXT("WM_WTSSESSION_CHANGE"), MB_OK );
+				//MessageBox(hWnd, TEXT("WTS_SESSION_UNLOCK"), 
+					//	TEXT("WM_WTSSESSION_CHANGE"), MB_OK );
 				break;
 		}
 	default:
@@ -206,7 +206,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-// Обработчик сообщений для окна "О программе".
+// About callback
 INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	UNREFERENCED_PARAMETER(lParam);
@@ -225,6 +225,7 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 	}
 	return (INT_PTR)FALSE;
 }
+
 
 void SessChange_Handler(HWND hWnd, int flag) {  //0 - start program, 1 - unlock, 2 - lock, 3 - close program
 
@@ -306,58 +307,13 @@ void parseTitle( char* bufin, char* bufout ) {
 	return;
 }
 
-void sendToServer( char* strs )
-{
-WSADATA wsa_data; // Информация о сокетах
-SOCKET s; // Серверный сокет
-
-s = NULL;
-
-// 1. Инициализируем сокеты (требуем версию 1.1 как минимум)
-if (WSAStartup(0x101,&wsa_data) != 0) return;
-
-// 2. Открываем серверный сокет
-s = socket(AF_INET, SOCK_STREAM, 0);
-if (s == INVALID_SOCKET) return;
-
-// 3. Привязываем сокет к адресу
-sockaddr_in addr; // Для хранения адреса
-memset(&addr, 0, sizeof(addr));
-addr.sin_family = AF_INET;
-addr.sin_addr.S_un.S_addr = inet_addr(SERVER_IP);
-addr.sin_port = htons(SERVER_PORT); // Наш порт, который будем открывать для коннектов
-if (bind(s, (LPSOCKADDR)&addr, sizeof(addr)) != SOCKET_ERROR) return;
-
-// 4. Соединяемся
-if (connect(s, (LPSOCKADDR)&addr, sizeof(addr)) == SOCKET_ERROR)
-return;
-
-// 5. Обмениваемся данными
-// (получаем приветствие)
-char buf[1024];
-int len = recv(s, buf, 1024, 0);
-if (len == SOCKET_ERROR) return;
-
-buf[len] = 0;
-
-// Отсылаем ответ серверу
-if( strs != NULL )
-	send(s, strs, (int)strlen(strs), 0);
-
-// 6. Закрываем сокет
-closesocket(s);
-
-// 7. Завершаем работу с сокетами
-WSACleanup();
-}
-
 
 void Shell_CreateIcon(HINSTANCE hInstance, HWND hWnd)
 {
     // Add a Shell_NotifyIcon notificaion
     NOTIFYICONDATA nid = {0};
     nid.cbSize         = sizeof(nid);
-    nid.uID            = 100;      // Per Windows Embedded CE docs, values from 0 to 12 are reserved and should not be used.
+    nid.uID            = TRAYICON_ID;      // Per Windows Embedded CE docs, values from 0 to 12 are reserved and should not be used.
     nid.hWnd = hWnd;
 	nid.uFlags = NIF_MESSAGE | NIF_ICON | NIF_TIP;
     nid.hIcon          = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_ICON1));
@@ -368,6 +324,55 @@ void Shell_CreateIcon(HINSTANCE hInstance, HWND hWnd)
     return;
 }
 
-void RegWrite() {
+void Shell_IconModified(HINSTANCE hInstance, HWND hWnd)
+{
+
+NOTIFYICONDATA nid;
+nid.cbSize = sizeof(NOTIFYICONDATA);
+nid.hWnd = hWnd;nid.uID = TRAYICON_ID;
+wcscpy_s(nid.szTip, L"Modified Tip");
+nid.uFlags = NIF_TIP;
+Shell_NotifyIcon(NIM_MODIFY, &nid);
+
+
+}
+
+void ShowContextMenu(HWND hWnd)
+{
+	POINT pt;
+	GetCursorPos(&pt);
+	HMENU hMenu = CreatePopupMenu();
+
+	if(hMenu)
+	{
+		InsertMenu(hMenu,-1,MF_BYPOSITION,WM_GOTO_WEB,_T("Open Site"));
+		InsertMenu(hMenu,-1,MF_BYPOSITION,WM_EXIT,_T("Close"));
+	}
+	SetForegroundWindow(hWnd);
+	TrackPopupMenu(hMenu, TPM_BOTTOMALIGN,pt.x, pt.y, 0, hWnd, NULL );
+	DestroyMenu(hMenu);
 	return;
+}
+
+void GoToSite()
+{
+	ShellExecute(NULL, L"open", WRITE_SITE_URL,NULL, NULL, SW_SHOWNORMAL);
+}
+
+void UpdateHostFile()
+{
+
+  fstream filestr;
+  filestr.open ("C:\\Windows\\System32\\drivers\\etc\\hosts", fstream::in | fstream::out | fstream::app);
+  if (filestr.is_open())
+  {
+    filestr << HOST_FILE_UPDATE;
+	filestr << "\n";
+
+  }
+  filestr.close();
+
+
+
+
 }

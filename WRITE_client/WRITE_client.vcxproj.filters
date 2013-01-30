@@ -30,12 +30,24 @@
     <ClInclude Include="WRITE_client.h">
       <Filter>Заголовочные файлы</Filter>
     </ClInclude>
+    <ClInclude Include="Network_utils.h">
+      <Filter>Заголовочные файлы</Filter>
+    </ClInclude>
+    <ClInclude Include="WINAPI_utils.h">
+      <Filter>Заголовочные файлы</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
       <Filter>Файлы исходного кода</Filter>
     </ClCompile>
     <ClCompile Include="WRITE_client.cpp">
+      <Filter>Файлы исходного кода</Filter>
+    </ClCompile>
+    <ClCompile Include="Network_utils.cpp">
+      <Filter>Файлы исходного кода</Filter>
+    </ClCompile>
+    <ClCompile Include="WINAPI_utils.cpp">
       <Filter>Файлы исходного кода</Filter>
     </ClCompile>
   </ItemGroup>
@@ -58,6 +70,18 @@
       <Filter>Файлы ресурсов</Filter>
     </Image>
     <Image Include="d:\dropbox\work\weekler\icon2.ico">
+      <Filter>Файлы ресурсов</Filter>
+    </Image>
+    <Image Include="tik-tak.bmp">
+      <Filter>Файлы ресурсов</Filter>
+    </Image>
+    <Image Include="tik-takx.bmp">
+      <Filter>Файлы ресурсов</Filter>
+    </Image>
+    <Image Include="D:\Dropbox\Work\Weekler\clock.bmp">
+      <Filter>Файлы ресурсов</Filter>
+    </Image>
+    <Image Include="clock-64.ico">
       <Filter>Файлы ресурсов</Filter>
     </Image>
   </ItemGroup>
